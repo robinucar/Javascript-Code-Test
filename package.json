@@ -1,0 +1,21 @@
+{
+  "name": "javascript-code-test",
+  "version": "1.0.0",
+  "description": "`BookSearchApiClient` is a simple class that makes a call to a http API to retrieve a list of books and return them.",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
+  }
+}
