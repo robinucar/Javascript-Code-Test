@@ -1,4 +1,5 @@
 import type { BookQuery } from "./bookQuery";
+import { ValidationError } from "./errors";
 
 const MIN_LIMIT = 1;
 const MAX_LIMIT = 50;
@@ -9,7 +10,7 @@ function normalizeText(value: string, fieldName: string): string {
   const trimmed = value.trim();
 
   if (!trimmed) {
-    throw new Error(`${fieldName} must not be empty`);
+    throw new ValidationError(`${fieldName} must not be empty`, fieldName);
   }
 
   return trimmed;
@@ -17,17 +18,17 @@ function normalizeText(value: string, fieldName: string): string {
 
 function normalizeLimit(limit: number): number {
   if (!Number.isFinite(limit)) {
-    throw new Error("limit must be a number");
+    throw new ValidationError("limit must be a number", "limit");
   }
 
   const integer = Math.floor(limit);
 
   if (integer < MIN_LIMIT) {
-    throw new Error(`limit must be at least ${MIN_LIMIT}`);
+    throw new ValidationError(`limit must be at least ${MIN_LIMIT}`, "limit");
   }
 
   if (integer > MAX_LIMIT) {
-    throw new Error(`limit must be at most ${MAX_LIMIT}`);
+    throw new ValidationError(`limit must be at most ${MAX_LIMIT}`, "limit");
   }
 
   return integer;
@@ -35,18 +36,21 @@ function normalizeLimit(limit: number): number {
 
 function normalizeYear(year: number): number {
   if (!Number.isFinite(year)) {
-    throw new Error("year must be a number");
+    throw new ValidationError("year must be a number", "year");
   }
 
   const integer = Math.floor(year);
   const maxYear = new Date().getFullYear() + 1;
 
   if (integer < MIN_YEAR_PUBLISHED) {
-    throw new Error(`year must be at least ${MIN_YEAR_PUBLISHED}`);
+    throw new ValidationError(
+      `year must be at least ${MIN_YEAR_PUBLISHED}`,
+      "year"
+    );
   }
 
   if (integer > maxYear) {
-    throw new Error(`year must be at most ${maxYear}`);
+    throw new ValidationError(`year must be at most ${maxYear}`, "year");
   }
 
   return integer;
