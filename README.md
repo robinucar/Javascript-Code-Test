@@ -196,6 +196,22 @@ Local and production examples are managed via env files:
 - `.env.local -> BOOK_API_BASE_URL=http://localhost:3000`
 - `npm run example:local`
 
+## Mock API (optional)
+
+This repo includes a small mock server to simulate a book seller API locally. It supports JSON and XML responses and the same endpoints used by the client:
+
+- `/by-author`
+- `/by-publisher`
+- `/by-year`
+
+Start it with:
+
+```bash
+npm run mock:api
+```
+
+By default it runs on port 3000.
+
 ## Architecture diagram
 
 ```mermaid
