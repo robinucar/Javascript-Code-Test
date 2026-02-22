@@ -1,5 +1,5 @@
-import { HttpError, ParseError, TimeoutError } from "../domain";
-import type { HttpClient, HttpResponse } from "./types";
+import { HttpError, ParseError, TimeoutError } from '../domain';
+import type { HttpClient, HttpResponse } from './types';
 
 type GetOptions = {
   timeoutMs?: number;
@@ -36,9 +36,12 @@ export class FetchHttpClient implements HttpClient {
         headers: response.headers,
       };
     } catch (error) {
-      if (error instanceof Error && error.name === "AbortError") {
-  throw new TimeoutError(`Request timed out after ${timeoutMs}ms`, timeoutMs);
-}
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new TimeoutError(
+          `Request timed out after ${timeoutMs}ms`,
+          timeoutMs,
+        );
+      }
 
       throw error;
     } finally {
