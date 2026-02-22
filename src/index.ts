@@ -2,9 +2,12 @@ import { FetchHttpClient } from "./http/fetchHttpClient";
 import { BookSearchClient } from "./bookSearchClient";
 import { ExampleSellerProvider } from "./providers/exampleSellerProvider";
 import type { CurrencyCode } from "./domain";
+import type { BookProvider } from "./providers/bookProvider";
+
+export type ProviderName = "exampleSeller";
 
 export type CreateClientOptions = {
-  provider?: "exampleSeller";
+  provider?: ProviderName;
   baseUrl?: string;
   format?: "json" | "xml";
   currency?: CurrencyCode;
@@ -24,13 +27,22 @@ export function createBookSearchClient(
     );
   }
 
-  const providerName = "exampleSeller";
-  const provider = new ExampleSellerProvider(httpClient, {
-    baseUrl,
-    format: options.format ?? "json",
-    currency: options.currency ?? "GBP",
-    timeoutMs: options.timeoutMs
-  });
+  const providers: Record<ProviderName, BookProvider> = {
+    exampleSeller: new ExampleSellerProvider(httpClient, {
+      baseUrl,
+      format: options.format ?? "json",
+      currency: options.currency ?? "GBP",
+      timeoutMs: options.timeoutMs
+    })
+  };
+
+  const providerName: ProviderName = options.provider ?? "exampleSeller";
+
+  const provider = providers[providerName];
+
+  if (!provider) {
+    throw new Error(`Unknown provider: ${providerName}`);
+  }
 
   return new BookSearchClient(
     { [providerName]: provider },
