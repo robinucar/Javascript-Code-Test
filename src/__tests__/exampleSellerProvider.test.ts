@@ -101,8 +101,7 @@ describe("ExampleSellerProvider", () => {
 
     expect(http.lastUrl).toContain("format=xml");
   });
-});
-it("throws ParseError when xml is missing required fields", async () => {
+  it("throws ParseError when xml is missing required fields", async () => {
   const invalidXml = `
     <response>
       <item>
@@ -134,4 +133,5 @@ it("throws ParseError when xml is missing required fields", async () => {
       limit: 10
     })
   ).rejects.toBeInstanceOf(ParseError);
+});
 });
