@@ -120,9 +120,45 @@ This keeps tests fast, deterministic, and independent of real network calls.
 
 ### How to run
 
+#### Install
+
+```bash
+npm install
+```
+
+#### Configuration
+
+This project expects a base URL for the seller API. You must either:
+
+- Set `BOOK_API_BASE_URL`, or
+- Pass `baseUrl` to `createBookSearchClient`.
+
+Local and production examples are managed via env files:
+
+- Copy `.env.example` to `.env.local` for local development
+- Copy `.env.example` to `.env.production` and replace the URL for a production environment
+
+#### Commands:
+
 - Typecheck: `npm run typecheck`
 - Tests: `npm run test`
-- Example usage: `npm run example` (the API domain is a placeholder, so the request will fail, but it demonstrates intended usage)
+
+#### Example usage:
+
+- Local: `npm run example:local` (uses `.env.local`)
+- Production like: `npm run example:prod` (uses `.env.production`)
+- Manual: `BOOK_API_BASE_URL=http://localhost:3000 npm run example`
+
+#### Local smoke run (optional)
+
+1. Start a local mock API (any API that matches the expected payload shape)
+2. Ensure `.env.local` contains `BOOK_API_BASE_URL=http://localhost:3000`
+3. Run: `npm run example:local`
+
+#### Example:
+
+- `.env.local -> BOOK_API_BASE_URL=http://localhost:3000`
+- `npm run example:local`
 
 ### Architecture diagram
 
