@@ -1,4 +1,5 @@
 import { createBookSearchClient } from "./index";
+import { BookQueries } from "./domain";
 
 async function main() {
   const client = createBookSearchClient({
@@ -6,11 +7,9 @@ async function main() {
     currency: "GBP"
   });
 
-  const booksByShakespeare = await client.search({
-    type: "byAuthor",
-    author: "Shakespeare",
-    limit: 10
-  });
+  const booksByShakespeare = await client.search(
+    BookQueries.byAuthor("Shakespeare", 10)
+  );
 
   console.log(booksByShakespeare);
 }
