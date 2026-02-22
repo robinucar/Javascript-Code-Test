@@ -1,0 +1,24 @@
+<response>
+  <item>
+    <book>
+      <title>Hamlet</title>
+      <author>Shakespeare</author>
+      <isbn>9780000000001</isbn>
+    </book>
+    <stock>
+      <quantity>3</quantity>
+      <price>9.99</price>
+    </stock>
+  </item>
+  <item>
+    <book>
+      <title>Macbeth</title>
+      <author>Shakespeare</author>
+      <isbn>9780000000002</isbn>
+    </book>
+    <stock>
+      <quantity>5</quantity>
+      <price>12.5</price>
+    </stock>
+  </item>
+</response>
