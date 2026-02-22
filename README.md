@@ -11,7 +11,23 @@ Things you will be asked about:
 3. How would you implement different query types for example: by publisher, by year published etc
 4. How your code would be tested
 
-## My approach
+# My approach
+
+## User Stories
+
+### As a consumer of the client
+
+- I want to search for books by author so that I can retrieve a list of matching books.
+- I want to search by publisher or by year published so that the query API is extensible beyond just author searches.
+- I want the search results returned in a consistent shape (`Book`) so that my code does not depend on vendor specific payloads.
+- I want the client to fail fast and clearly when configuration is missing (for example base URL) so I do not accidentally call the wrong endpoint.
+
+### As a maintainer
+
+- I want to add a new book seller API by implementing a new provider so that I can extend the system without changing consumer code.
+- I want payload differences (JSON vs XML, different field names) handled inside providers so that consumers remain stable.
+- I want a clear separation of concerns (domain, http, providers, facade) so the code remains readable and maintainable.
+- I want fast, deterministic tests that do not depend on real network calls so refactors are safe and feedback is quick.
 
 ### Goals
 
@@ -218,3 +234,24 @@ flowchart LR
   Src --> C2[index.ts]
   Src --> C3[example-client.ts]
 ```
+
+## Future improvements
+
+- Provider selection strategy
+  - Support multiple registered providers in `createBookSearchClient` and select by name, region, availability, or feature support.
+  - Optional fallback strategy if a provider is down.
+
+- Stronger validation
+  - Add stricter domain validation rules (for example ISBN format checks, quantity bounds).
+  - If a seller publishes a formal schema (XSD or similar), validate XML responses against it before mapping.
+
+- Better XML mapping robustness
+  - Make XML parsing more schema aware (or explicitly scoped to known parent elements) to avoid accidental matches in nested structures.
+
+- Observability and resilience
+  - Add structured logging hooks and request ids for easier debugging.
+  - Optional retries with backoff for transient network errors.
+
+- Packaging and distribution
+  - Add a proper build step to emit `dist` output and type declarations for publishing as a library.
+  - Document the supported Node versions and provide a minimal API reference section.
