@@ -123,3 +123,62 @@ This keeps tests fast, deterministic, and independent of real network calls.
 - Typecheck: `npm run typecheck`
 - Tests: `npm run test`
 - Example usage: `npm run example` (the API domain is a placeholder, so the request will fail, but it demonstrates intended usage)
+
+### Architecture diagram
+
+```mermaid
+flowchart TD
+  A[Example client] --> B[createBookSearchClient factory]
+  B --> C[BookSearchClient facade]
+  C --> D{Provider registry}
+  D --> E[ExampleSellerProvider]
+  E --> F[HttpClient interface]
+  F --> G[FetchHttpClient]
+  G --> H[Seller API endpoint]
+
+  subgraph Domain
+    I[BookQuery]
+    J[Book]
+    K[Money]
+    L[Errors: HttpError ParseError TimeoutError]
+  end
+
+  A --> I
+  E --> J
+  E --> K
+  G --> L
+```
+
+### Code Structure
+
+```mermaid
+flowchart LR
+  Root[repo root] --> Src[src]
+
+  Src --> Tests[src/__tests__]
+  Tests --> Fixtures[src/__tests__/fixtures]
+  Fixtures --> BooksJson[books.json]
+  Fixtures --> BooksXml[books.xml]
+  Tests --> T1[bookSearchClient.test.ts]
+  Tests --> T2[exampleSellerProvider.test.ts]
+  Tests --> T3[fetchHttpClient.test.ts]
+
+  Src --> Domain[src/domain]
+  Domain --> D1[book.ts]
+  Domain --> D2[bookQuery.ts]
+  Domain --> D3[money.ts]
+  Domain --> D4[errors.ts]
+  Domain --> D5[index.ts]
+
+  Src --> Http[src/http]
+  Http --> H1[types.ts]
+  Http --> H2[fetchHttpClient.ts]
+
+  Src --> Providers[src/providers]
+  Providers --> P1[bookProvider.ts]
+  Providers --> P2[exampleSellerProvider.ts]
+
+  Src --> C1[bookSearchClient.ts]
+  Src --> C2[index.ts]
+  Src --> C3[example-client.ts]
+```
