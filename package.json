@@ -8,8 +8,10 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc -p tsconfig.json",
-    "build": "tsc -p tsconfig.json",
-    "example": "tsx src/example-client.ts"
+    "example": "DOTENV_CONFIG_PATH=.env.local tsx -r dotenv/config src/example-client.ts",
+    "example:local": "DOTENV_CONFIG_PATH=.env.local tsx -r dotenv/config src/example-client.ts",
+    "example:prod": "DOTENV_CONFIG_PATH=.env.production tsx -r dotenv/config src/example-client.ts",
+    "mock:api": "node mock-api/mock-api.js"
   },
   "keywords": [],
   "author": "",
@@ -21,7 +23,8 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
-    "@xmldom/xmldom": "^0.8.11"
+    "@xmldom/xmldom": "^0.8.11",
+    "dotenv": "^17.3.1"
   },
   "overrides": {
     "vite": "^6.0.0"

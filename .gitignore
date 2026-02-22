@@ -3,6 +3,8 @@ dist/
 coverage/
 .DS_Store
 .env
+.env.local
+.env.production
 vitest.config.js
 vitest.config.js.map
 vitest.config.d.ts

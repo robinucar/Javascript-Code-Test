@@ -11,12 +11,22 @@ export type CreateClientOptions = {
   timeoutMs?: number;
 };
 
-export function createBookSearchClient(options: CreateClientOptions = {}): BookSearchClient {
+export function createBookSearchClient(
+  options: CreateClientOptions = {}
+): BookSearchClient {
   const httpClient = new FetchHttpClient();
+
+  const baseUrl = options.baseUrl ?? process.env.BOOK_API_BASE_URL;
+
+  if (!baseUrl) {
+    throw new Error(
+      "Missing base URL. Set BOOK_API_BASE_URL or pass baseUrl to createBookSearchClient."
+    );
+  }
 
   const providerName = "exampleSeller";
   const provider = new ExampleSellerProvider(httpClient, {
-    baseUrl: options.baseUrl ?? "http://api.book-seller-example.com",
+    baseUrl,
     format: options.format ?? "json",
     currency: options.currency ?? "GBP",
     timeoutMs: options.timeoutMs
