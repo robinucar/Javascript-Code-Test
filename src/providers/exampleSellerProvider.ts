@@ -62,20 +62,34 @@ export class ExampleSellerProvider implements BookProvider {
     const document = new DOMParser().parseFromString(xmlText, "application/xml");
     const rootElement = document.documentElement;
 
-    const itemElements = Array.from(rootElement.childNodes).filter(
-      (node): node is Element => node.nodeType === 1
-    );
+    const itemElements = Array.from(rootElement.getElementsByTagName("item"));
 
     return itemElements.map((itemElement, itemIndex) => {
-      const title = this.getRequiredTagText(itemElement, "title", itemIndex);
-      const author = this.getRequiredTagText(itemElement, "author", itemIndex);
-      const isbn = this.getRequiredTagText(itemElement, "isbn", itemIndex);
-      const quantityText = this.getRequiredTagText(
+      const title = this.getRequiredTagTextFromPath(
         itemElement,
-        "quantity",
+        ["book", "title"],
         itemIndex
       );
-      const priceText = this.getRequiredTagText(itemElement, "price", itemIndex);
+      const author = this.getRequiredTagTextFromPath(
+        itemElement,
+        ["book", "author"],
+        itemIndex
+      );
+      const isbn = this.getRequiredTagTextFromPath(
+        itemElement,
+        ["book", "isbn"],
+        itemIndex
+      );
+      const quantityText = this.getRequiredTagTextFromPath(
+        itemElement,
+        ["stock", "quantity"],
+        itemIndex
+      );
+      const priceText = this.getRequiredTagTextFromPath(
+        itemElement,
+        ["stock", "price"],
+        itemIndex
+      );
 
       const quantity = Number(quantityText);
       const amount = Number(priceText);
@@ -100,17 +114,25 @@ export class ExampleSellerProvider implements BookProvider {
     });
   }
 
-  private getRequiredTagText(
+  private getRequiredTagTextFromPath(
     parentElement: Element,
-    tagName: string,
+    path: string[],
     itemIndex: number
   ): string {
-    const matches = parentElement.getElementsByTagName(tagName);
-    const raw = matches.item(0)?.textContent ?? "";
-    const value = raw.trim();
+    let current: Element | null = parentElement;
+
+    for (const segment of path) {
+      current = current.getElementsByTagName(segment).item(0);
+
+      if (!current) {
+        throw new ParseError(`Missing ${segment} at item ${itemIndex}`);
+      }
+    }
+
+    const value = (current.textContent ?? "").trim();
 
     if (!value) {
-      throw new ParseError(`Missing ${tagName} at item ${itemIndex}`);
+      throw new ParseError(`Missing ${path[path.length - 1]} at item ${itemIndex}`);
     }
 
     return value;

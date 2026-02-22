@@ -5,7 +5,7 @@ import { join } from "node:path";
 import jsonFixture from "../__tests__/fixtures/books.json";
 import type { HttpClient, HttpResponse } from "../http/types";
 import { ExampleSellerProvider } from "../providers/exampleSellerProvider";
-import { ParseError } from "../domain";
+import { BookQueries, ParseError } from "../domain";
 
 class FakeHttpClient implements HttpClient {
   public lastUrl: string | undefined;
@@ -37,11 +37,7 @@ describe("ExampleSellerProvider", () => {
       currency: "GBP"
     });
 
-    const result = await provider.search({
-      type: "byAuthor",
-      author: "Shakespeare",
-      limit: 10
-    });
+    const result = await provider.search(BookQueries.byAuthor("Shakespeare", 10));
 
     expect(result).toEqual([
       {
@@ -76,11 +72,7 @@ describe("ExampleSellerProvider", () => {
       currency: "GBP"
     });
 
-    const result = await provider.search({
-      type: "byAuthor",
-      author: "Shakespeare",
-      limit: 10
-    });
+    const result = await provider.search(BookQueries.byAuthor("Shakespeare", 10));
 
     expect(result).toEqual([
       {
@@ -101,37 +93,34 @@ describe("ExampleSellerProvider", () => {
 
     expect(http.lastUrl).toContain("format=xml");
   });
+
   it("throws ParseError when xml is missing required fields", async () => {
-  const invalidXml = `
-    <response>
-      <item>
-        <book>
-          <title></title>
-          <author>Shakespeare</author>
-          <isbn>9780000000001</isbn>
-        </book>
-        <stock>
-          <quantity>3</quantity>
-          <price>9.99</price>
-        </stock>
-      </item>
-    </response>
-  `.trim();
+    const invalidXml = `
+      <response>
+        <item>
+          <book>
+            <title></title>
+            <author>Shakespeare</author>
+            <isbn>9780000000001</isbn>
+          </book>
+          <stock>
+            <quantity>3</quantity>
+            <price>9.99</price>
+          </stock>
+        </item>
+      </response>
+    `.trim();
 
-  const http = new FakeHttpClient(invalidXml);
+    const http = new FakeHttpClient(invalidXml);
 
-  const provider = new ExampleSellerProvider(http, {
-    baseUrl: "http://api.book-seller-example.com",
-    format: "xml",
-    currency: "GBP"
+    const provider = new ExampleSellerProvider(http, {
+      baseUrl: "http://api.book-seller-example.com",
+      format: "xml",
+      currency: "GBP"
+    });
+
+    await expect(
+      provider.search(BookQueries.byAuthor("Shakespeare", 10))
+    ).rejects.toBeInstanceOf(ParseError);
   });
-
-  await expect(
-    provider.search({
-      type: "byAuthor",
-      author: "Shakespeare",
-      limit: 10
-    })
-  ).rejects.toBeInstanceOf(ParseError);
-});
 });
