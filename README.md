@@ -10,3 +10,116 @@ Things you will be asked about:
 2. How would you manage differences in response payloads between different APIs without needing to make future changes to whatever code you have in example-client.js
 3. How would you implement different query types for example: by publisher, by year published etc
 4. How your code would be tested
+
+## My approach
+
+### Goals
+
+I refactored the original client into a small, production ready design with these goals:
+
+- Easy to add new book seller APIs without changing consumer code
+- Normalise different payloads into a single domain model
+- Support multiple query types in a type safe way
+- Make the code straightforward to test
+
+### High level design
+
+The refactor is organised into a few layers:
+
+- Domain: stable contract (`Book`, `Money`, `BookQuery`)
+- HTTP: `HttpClient` abstraction (`FetchHttpClient`) with timeouts and consistent errors
+- Providers: one per seller (`BookProvider`, `ExampleSellerProvider`) mapping payloads to `Book`
+- Facade: `BookSearchClient` is the single entry point for consumers
+- Factory: `createBookSearchClient` wires defaults in one place
+
+### 1 Adding more book seller APIs
+
+Add a new provider that implements `BookProvider`, then register it.
+
+Provider skeleton:
+
+```ts
+import type { Book, BookQuery } from './domain';
+import type { BookProvider } from './providers/bookProvider';
+
+export class AnotherSellerProvider implements BookProvider {
+  async search(_query: BookQuery): Promise<Book[]> {
+    return [];
+  }
+}
+```
+
+Register providers:
+
+```ts
+import { BookSearchClient } from './bookSearchClient';
+
+const client = new BookSearchClient(
+  { exampleSeller: exampleProvider, anotherSeller: anotherProvider },
+  { defaultProvider: 'exampleSeller' },
+);
+```
+
+### 2 Handling different response payloads without changing the example client
+
+Each provider normalises its own payload into the same domain shape:
+
+- `Book` (title, author, isbn, quantity, price as `Money`)
+
+So the consumer does not care if the seller returns JSON or XML.
+
+Consumer stays the same:
+
+```ts
+await client.search({
+  type: 'byAuthor',
+  author: 'Shakespeare',
+  limit: 10,
+});
+```
+
+### 3 Supporting different query types
+
+Queries are modelled as a discriminated union `BookQuery`:
+
+- byAuthor
+- byPublisher
+- byYearPublished
+
+Adding a new query type is:
+
+- Add a new union case in BookQuery
+- Add provider mapping logic for that case
+
+Example usage:
+
+```ts
+await client.search({ type: 'byAuthor', author: 'Shakespeare', limit: 10 });
+
+await client.search({
+  type: 'byPublisher',
+  publisher: 'Penguin',
+  limit: 10,
+});
+
+await client.search({
+  type: 'byYearPublished',
+  year: 1603,
+  limit: 10,
+});
+```
+
+### 4 Testing strategy
+
+Testing follows a simple pyramid:
+
+- **Unit tests**: provider mapping for JSON and XML using fixtures, plus HTTP error and timeout behaviour
+- **Integration style tests**: `BookSearchClient` delegation to providers
+
+This keeps tests fast, deterministic, and independent of real network calls.
+
+### How to run
+
+- Typecheck: `npm run typecheck`
+- Tests: `npm run test`
+- Example usage: `npm run example` (the API domain is a placeholder, so the request will fail, but it demonstrates intended usage)
