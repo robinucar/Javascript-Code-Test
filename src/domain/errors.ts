@@ -34,3 +34,9 @@ export class TimeoutError extends Error {
     this.timeoutMs = timeoutMs;
   }
 }
+export class ConfigurationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ConfigurationError";
+  }
+}
