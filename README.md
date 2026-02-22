@@ -29,7 +29,7 @@ Things you will be asked about:
 - I want a clear separation of concerns (domain, http, providers, facade) so the code remains readable and maintainable.
 - I want fast, deterministic tests that do not depend on real network calls so refactors are safe and feedback is quick.
 
-### Goals
+## Goals
 
 I refactored the original client into a small, production ready design with these goals:
 
@@ -38,19 +38,47 @@ I refactored the original client into a small, production ready design with thes
 - Support multiple query types in a type safe way
 - Make the code straightforward to test
 
-### High level design
+## High level design
 
 The refactor is organised into a few layers:
 
-- Domain: stable contract (`Book`, `Money`, `BookQuery`)
+- Domain: stable contract (`Book`, `Money`, `BookQuery`, `BookQueries`)
 - HTTP: `HttpClient` abstraction (`FetchHttpClient`) with timeouts and consistent errors
 - Providers: one per seller (`BookProvider`, `ExampleSellerProvider`) mapping payloads to `Book`
 - Facade: `BookSearchClient` is the single entry point for consumers
 - Factory: `createBookSearchClient` wires defaults in one place
 
-### 1 Adding more book seller APIs
+## Tooling
 
-Add a new provider that implements `BookProvider`, then register it.
+This refactor uses a small set of common tools for a fast feedback loop and a clean TypeScript developer experience.
+
+### Runtime
+
+- Node.js
+
+### Language and type checking
+
+- TypeScript
+
+### Testing
+
+- Vitest
+
+### Environment configuration
+
+- dotenv
+
+### TypeScript execution
+
+- tsx
+
+### XML parsing
+
+- xmldom
+
+## 1. Adding more book seller APIs
+
+Add a new provider that implements `BookProvider`, then register it. In this repo, `createBookSearchClient` currently wires the default provider, but `BookSearchClient` supports a provider registry for adding more providers.
 
 Provider skeleton:
 
@@ -59,13 +87,14 @@ import type { Book, BookQuery } from './domain';
 import type { BookProvider } from './providers/bookProvider';
 
 export class AnotherSellerProvider implements BookProvider {
-  async search(_query: BookQuery): Promise<Book[]> {
+  async search(query: BookQuery): Promise<Book[]> {
+    void query;
     return [];
   }
 }
 ```
 
-Register providers:
+Register providers (low level wiring):
 
 ```ts
 import { BookSearchClient } from './bookSearchClient';
@@ -76,7 +105,7 @@ const client = new BookSearchClient(
 );
 ```
 
-### 2 Handling different response payloads without changing the example client
+## 2. Handling different response payloads without changing the example client
 
 Each provider normalises its own payload into the same domain shape:
 
@@ -87,14 +116,12 @@ So the consumer does not care if the seller returns JSON or XML.
 Consumer stays the same:
 
 ```ts
-await client.search({
-  type: 'byAuthor',
-  author: 'Shakespeare',
-  limit: 10,
-});
+import { BookQueries } from './domain';
+
+await client.search(BookQueries.byAuthor('Shakespeare', 10));
 ```
 
-### 3 Supporting different query types
+## 3. Supporting different query types
 
 Queries are modelled as a discriminated union `BookQuery`:
 
@@ -110,39 +137,32 @@ Adding a new query type is:
 Example usage:
 
 ```ts
-await client.search({ type: 'byAuthor', author: 'Shakespeare', limit: 10 });
+import { BookQueries } from './domain';
+await client.search(BookQueries.byAuthor('Shakespeare', 10));
 
-await client.search({
-  type: 'byPublisher',
-  publisher: 'Penguin',
-  limit: 10,
-});
+await client.search(BookQueries.byPublisher('Penguin', 10));
 
-await client.search({
-  type: 'byYearPublished',
-  year: 1603,
-  limit: 10,
-});
+await client.search(BookQueries.byYearPublished(1603, 10));
 ```
 
-### 4 Testing strategy
+## 4. Testing strategy
 
 Testing follows a simple pyramid:
 
-- **Unit tests**: provider mapping for JSON and XML using fixtures, plus HTTP error and timeout behaviour
+- **Unit tests**: provider mapping for JSON and XML using fixtures, plus HTTP error, timeout, and query validation behaviour (ValidationError).
 - **Integration style tests**: `BookSearchClient` delegation to providers
 
 This keeps tests fast, deterministic, and independent of real network calls.
 
-### How to run
+## How to run
 
-#### Install
+### Install
 
 ```bash
 npm install
 ```
 
-#### Configuration
+### Configuration
 
 This project expects a base URL for the seller API. You must either:
 
@@ -154,35 +174,35 @@ Local and production examples are managed via env files:
 - Copy `.env.example` to `.env.local` for local development
 - Copy `.env.example` to `.env.production` and replace the URL for a production environment
 
-#### Commands:
+### Commands:
 
 - Typecheck: `npm run typecheck`
 - Tests: `npm run test`
 
-#### Example usage:
+### Example usage:
 
 - Local: `npm run example:local` (uses `.env.local`)
 - Production like: `npm run example:prod` (uses `.env.production`)
 - Manual: `BOOK_API_BASE_URL=http://localhost:3000 npm run example`
 
-#### Local smoke run (optional)
+### Local smoke run (optional)
 
 1. Start a local mock API (any API that matches the expected payload shape)
 2. Ensure `.env.local` contains `BOOK_API_BASE_URL=http://localhost:3000`
 3. Run: `npm run example:local`
 
-#### Example:
+### Example:
 
 - `.env.local -> BOOK_API_BASE_URL=http://localhost:3000`
 - `npm run example:local`
 
-### Architecture diagram
+## Architecture diagram
 
 ```mermaid
 flowchart TD
   A[Example client] --> B[createBookSearchClient factory]
   B --> C[BookSearchClient facade]
-  C --> D{Provider registry}
+  C --> D{Provider registry in BookSearchClient}
   D --> E[ExampleSellerProvider]
   E --> F[HttpClient interface]
   F --> G[FetchHttpClient]
@@ -190,18 +210,20 @@ flowchart TD
 
   subgraph Domain
     I[BookQuery]
+    M[BookQueries]
     J[Book]
     K[Money]
-    L[Errors: HttpError ParseError TimeoutError]
+    L[Errors: HttpError ParseError TimeoutError ConfigurationError ValidationError]
   end
 
   A --> I
+  A --> M
   E --> J
   E --> K
   G --> L
 ```
 
-### Code Structure
+## Code Structure
 
 ```mermaid
 flowchart LR
@@ -218,6 +240,7 @@ flowchart LR
   Src --> Domain[src/domain]
   Domain --> D1[book.ts]
   Domain --> D2[bookQuery.ts]
+  Domain --> D6[bookQueryFactory.ts]
   Domain --> D3[money.ts]
   Domain --> D4[errors.ts]
   Domain --> D5[index.ts]
@@ -238,7 +261,7 @@ flowchart LR
 ## Future improvements
 
 - Provider selection strategy
-  - Support multiple registered providers in `createBookSearchClient` and select by name, region, availability, or feature support.
+  - Add additional providers to the createBookSearchClient registry and select by name, region, availability, or feature support.
   - Optional fallback strategy if a provider is down.
 
 - Stronger validation
