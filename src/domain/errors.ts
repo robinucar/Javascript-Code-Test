@@ -24,3 +24,13 @@ export class UnsupportedQueryError extends Error {
     this.queryType = queryType;
   }
 }
+
+export class TimeoutError extends Error {
+  public readonly timeoutMs: number;
+
+  constructor(message: string, timeoutMs: number) {
+    super(message);
+    this.name = "TimeoutError";
+    this.timeoutMs = timeoutMs;
+  }
+}
