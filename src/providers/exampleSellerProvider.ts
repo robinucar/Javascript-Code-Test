@@ -67,37 +67,15 @@ export class ExampleSellerProvider implements BookProvider {
     );
 
     return itemElements.map((itemElement, itemIndex) => {
-      const itemChildElements = Array.from(itemElement.childNodes).filter(
-        (node): node is Element => node.nodeType === 1
+      const title = this.getRequiredTagText(itemElement, "title", itemIndex);
+      const author = this.getRequiredTagText(itemElement, "author", itemIndex);
+      const isbn = this.getRequiredTagText(itemElement, "isbn", itemIndex);
+      const quantityText = this.getRequiredTagText(
+        itemElement,
+        "quantity",
+        itemIndex
       );
-
-      const bookElement = itemChildElements[0];
-      const stockElement = itemChildElements[1];
-
-      if (!bookElement || !stockElement) {
-        throw new ParseError(`Invalid XML structure at item ${itemIndex}`);
-      }
-
-      const bookFieldElements = Array.from(bookElement.childNodes).filter(
-        (node): node is Element => node.nodeType === 1
-      );
-      const stockFieldElements = Array.from(stockElement.childNodes).filter(
-        (node): node is Element => node.nodeType === 1
-      );
-
-      const title = (bookFieldElements[0]?.textContent ?? "").trim();
-      const author = (bookFieldElements[1]?.textContent ?? "").trim();
-      const isbn = (bookFieldElements[2]?.textContent ?? "").trim();
-      const quantityText = (stockFieldElements[0]?.textContent ?? "").trim();
-      const priceText = (stockFieldElements[1]?.textContent ?? "").trim();
-
-      if (!title) throw new ParseError(`Missing title at item ${itemIndex}`);
-      if (!author) throw new ParseError(`Missing author at item ${itemIndex}`);
-      if (!isbn) throw new ParseError(`Missing isbn at item ${itemIndex}`);
-      if (!quantityText) {
-        throw new ParseError(`Missing quantity at item ${itemIndex}`);
-      }
-      if (!priceText) throw new ParseError(`Missing price at item ${itemIndex}`);
+      const priceText = this.getRequiredTagText(itemElement, "price", itemIndex);
 
       const quantity = Number(quantityText);
       const amount = Number(priceText);
@@ -120,6 +98,22 @@ export class ExampleSellerProvider implements BookProvider {
         }
       };
     });
+  }
+
+  private getRequiredTagText(
+    parentElement: Element,
+    tagName: string,
+    itemIndex: number
+  ): string {
+    const matches = parentElement.getElementsByTagName(tagName);
+    const raw = matches.item(0)?.textContent ?? "";
+    const value = raw.trim();
+
+    if (!value) {
+      throw new ParseError(`Missing ${tagName} at item ${itemIndex}`);
+    }
+
+    return value;
   }
 
   private buildUrl(query: BookQuery): string {
