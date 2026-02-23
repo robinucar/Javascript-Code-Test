@@ -1,0 +1,18 @@
+[
+  {
+    "book": {
+      "title": "Hamlet",
+      "author": "Shakespeare",
+      "isbn": "9780000000001"
+    },
+    "stock": { "quantity": 3, "price": 9.99 }
+  },
+  {
+    "book": {
+      "title": "Macbeth",
+      "author": "Shakespeare",
+      "isbn": "9780000000002"
+    },
+    "stock": { "quantity": 5, "price": 12.5 }
+  }
+]

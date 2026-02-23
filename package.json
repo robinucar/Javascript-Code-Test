@@ -1,0 +1,32 @@
+{
+  "name": "javascript-code-test",
+  "version": "1.0.0",
+  "description": "`BookSearchApiClient` is a simple class that makes a call to a http API to retrieve a list of books and return them.",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -p tsconfig.json",
+    "example": "DOTENV_CONFIG_PATH=.env.local tsx -r dotenv/config src/example-client.ts",
+    "example:local": "DOTENV_CONFIG_PATH=.env.local tsx -r dotenv/config src/example-client.ts",
+    "example:prod": "DOTENV_CONFIG_PATH=.env.production tsx -r dotenv/config src/example-client.ts",
+    "mock:api": "node mock-api/mock-api.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^25.3.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "@xmldom/xmldom": "^0.8.11",
+    "dotenv": "^17.3.1"
+  },
+  "overrides": {
+    "vite": "^6.0.0"
+  }
+}
